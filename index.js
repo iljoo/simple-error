@@ -77,7 +77,14 @@ SimpleError.define = function (name, opts) {
   Constructor.prototype.friendly = function friendly() {
     var result = { success: false };
 
-    Object.keys(this)
+    var iterator = this;
+
+    if (Constructor.super_ && Constructor.super_.prototype.friendly){
+      iterator = Constructor.super_.prototype.friendly.apply(this);
+      result = { success: false };
+    }
+
+    Object.keys(iterator)
       .filter(function (prop) {
         return excludedProps.indexOf(prop) === -1;
       })
@@ -114,8 +121,10 @@ SimpleError.define = function (name, opts) {
     opts = args.opts || {};
 
     var Child = SimpleError.define(name, opts);
+    var friendly = Child.prototype.friendly;
     util.inherits(Child, Constructor);
     copyMethodsToPrototype(Child, opts.methods);
+    Child.prototype.friendly = friendly;
 
     return Child;
   };
@@ -124,4 +133,3 @@ SimpleError.define = function (name, opts) {
 
   return Constructor;
 };
-

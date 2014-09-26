@@ -12,6 +12,9 @@ var ApiError = SimpleError.define('ApiError', {
   }
 });
 
+
+
+
 var NotFoundError = ApiError.define('NotFoundError', {
   code: 4004,
   statusCode: 404,
@@ -39,6 +42,17 @@ var ErrorWithCtor = ApiError.define('ErrorWithCtor', {
       }
     }
   }
+});
+
+var ApiErrorWithExclude = SimpleError.define('ApiErrorWithExclude', {
+  code: 5005,
+  statusCode: 500,
+  message: 'api error',
+  exclude: ['statusCode']
+});
+
+var ErrorWithExcludeProps = ApiErrorWithExclude.define('ErrorWithExcludeProps', {
+  exclude: ['message']
 });
 
 test('api error', function (t) {
@@ -125,4 +139,14 @@ test('should exclude props defined in parent', function (t) {
 	});
 
 	t.end();
+});
+
+test('excluded properties with inheritens', function(t){
+  var err = new ErrorWithExcludeProps();
+  var friendly = err.friendly();
+  t.ok(friendly.statusCode === undefined);
+  t.ok(friendly.message === undefined);
+  t.ok(friendly.code === 0);
+  t.end();
+
 });
