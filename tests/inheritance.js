@@ -12,6 +12,9 @@ var ApiError = SimpleError.define('ApiError', {
   }
 });
 
+
+
+
 var NotFoundError = ApiError.define('NotFoundError', {
   code: 4004,
   statusCode: 404,
@@ -39,6 +42,17 @@ var ErrorWithCtor = ApiError.define('ErrorWithCtor', {
       }
     }
   }
+});
+
+var ApiErrorWithExclude = SimpleError.define('ApiErrorWithExclude', {
+  code: 5005,
+  statusCode: 500,
+  message: 'api error',
+  exclude: ['statusCode']
+});
+
+var ErrorWithExcludeProps = ApiErrorWithExclude.define('ErrorWithExcludeProps', {
+  exclude: ['message', 'customInt']
 });
 
 test('api error', function (t) {
@@ -124,5 +138,41 @@ test('should exclude props defined in parent', function (t) {
 		t.notOk(friendly[prop]);
 	});
 
+  t.ok(friendly.success === false, 'Success should be false');
+
 	t.end();
+});
+
+test('excluded properties with inheritens', function(t){
+  var err = new ErrorWithExcludeProps();
+  err.customMessage = 'message2';
+  err.customInt = 2;
+  var friendly = err.friendly();
+  t.ok(friendly.statusCode === undefined);
+  t.ok(friendly.message === undefined);
+  t.ok(friendly.code === 0);
+  t.ok(friendly.customMessage === 'message2');
+  t.ok(friendly.customInt === undefined);
+  t.ok(friendly.success === false, 'Success should be false');
+  t.end();
+
+});
+
+test('excluded properties with inheritens in two layers', function(t){
+  var NewError = ErrorWithExcludeProps.define('NewError', {
+    exclude: ['customString']
+  });
+
+  var err = new NewError();
+  err.customString = 'Shold be excluded';
+  err.customString2 = 'Should be included';
+  var friendly = err.friendly();
+  t.ok(friendly.statusCode === undefined);
+  t.ok(friendly.message === undefined);
+  t.ok(friendly.code === 0);
+  t.ok(friendly.customString === undefined);
+  t.ok(friendly.success === false, 'Success should be false');
+  t.ok(friendly.customString2 === 'Should be included');
+  t.end();
+
 });
