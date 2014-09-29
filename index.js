@@ -81,7 +81,6 @@ SimpleError.define = function (name, opts) {
 
     if (Constructor.super_ && Constructor.super_.prototype.friendly){
       iterator = Constructor.super_.prototype.friendly.apply(this);
-      result = { success: false };
     }
 
     Object.keys(iterator)
@@ -96,6 +95,7 @@ SimpleError.define = function (name, opts) {
       result.stack = this.stack;
     }
 
+    result.success = false;
     return result;
   };
 
